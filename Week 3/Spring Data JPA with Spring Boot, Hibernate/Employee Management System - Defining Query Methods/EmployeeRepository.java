@@ -37,4 +37,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     // Native query to find employees by email domain
     @Query(value = "SELECT * FROM employees e WHERE e.email LIKE %:domain%", nativeQuery = true)
     List<Employee> findByEmailDomain(@Param("domain") String domain);
+
+    @Query(name = "Employee.findByNameNamedQuery")
+    List<Employee> findByNameNamedQuery(@Param("name") String name);
+
+    @Query(name = "Employee.findByDepartmentNameNamedQuery")
+    List<Employee> findByDepartmentNameNamedQuery(@Param("departmentName") String departmentName);
 }
