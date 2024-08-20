@@ -50,4 +50,24 @@ public class BookControllerTest {
                 .andExpect(jsonPath("$.author", is("John Doe")))
                 .andExpect(jsonPath("$.isbn", is("123-4567891234")));
     }
+
+    @Test
+public void testGetBook_invalidInput() throws Exception {
+    mockMvc.perform(get("/api/books")
+            .param("title", "")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+}
+
+    @Test
+public void testGetBook_returnsBookInXml() throws Exception {
+    mockMvc.perform(get("/api/books")
+            .param("title", "Test Book")
+            .accept(MediaType.APPLICATION_XML))
+            .andExpect(status().isOk())
+            .andExpect(xpath("/book/title").string("Test Book"))
+            .andExpect(xpath("/book/author").string("John Doe"))
+            .andExpect(xpath("/book/isbn").string("123-4567891234"));
+}
+
 }
