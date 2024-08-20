@@ -107,4 +107,30 @@ public class BookControllerTest {
         mockMvc.perform(delete("/api/books/999"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+public void testCreateBook_InvalidData() throws Exception {
+    mockMvc.perform(post("/api/books")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"title\":\"\", \"author\":\"New Author\"}"))
+            .andExpect(status().isBadRequest());
+}
+
+
+    @Test
+public void testCreateBook_VerifyHeaders() throws Exception {
+    Book book = new Book(1L, "New Book", "New Author", "1234567890");
+
+    when(bookService.saveBook(any(Book.class))).thenReturn(book);
+
+    mockMvc.perform(post("/api/books")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"title\":\"New Book\", \"author\":\"New Author\", \"isbn\":\"1234567890\"}"))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.title", is("New Book")))
+            .andExpect(jsonPath("$.author", is("New Author")))
+            .andExpect(jsonPath("$.isbn", is("1234567890")))
+            .andExpect(header().string("Content-Type", "application/json"));
+}
+
 }
