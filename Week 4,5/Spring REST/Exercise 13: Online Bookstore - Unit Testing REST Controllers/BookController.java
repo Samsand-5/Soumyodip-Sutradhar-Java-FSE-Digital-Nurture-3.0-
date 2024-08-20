@@ -1,73 +1,46 @@
 package com.example.bookstore.controller;
 
 import com.example.bookstore.model.Book;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
+import com.example.bookstore.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.hamcrest.Matchers.is;
+import java.util.List;
 
-@WebMvcTest(BookController.class)
-public class BookControllerTest {
+@RestController
+@RequestMapping("/api/books")
+public class BookController {
 
     @Autowired
-    private MockMvc mockMvc;
+    private BookService bookService;
 
-    @InjectMocks
-    private BookController bookController;
-
-    @BeforeEach
-    public void setup() {
-        MockitoAnnotations.initMocks(this);
-        this.mockMvc = MockMvcBuilders.standaloneSetup(bookController).build();
+    @GetMapping
+    public List<Book> getAllBooks() {
+        return bookService.findAllBooks();
     }
 
-    @Test
-    public void testGetBook_returnsBook() throws Exception {
-        mockMvc.perform(get("/api/books")
-                .param("title", "Test Book")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title", is("Test Book")))
-                .andExpect(jsonPath("$.author", is("John Doe")))
-                .andExpect(jsonPath("$.isbn", is("123-4567891234")));
+    @GetMapping("/{id}")
+    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
+        return bookService.findBookById(id)
+                .map(book -> new ResponseEntity<>(book, HttpStatus.OK))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @Test
-    public void testGetBook_defaultTitle() throws Exception {
-        mockMvc.perform(get("/api/books")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title", is("Sample Book")))
-                .andExpect(jsonPath("$.author", is("John Doe")))
-                .andExpect(jsonPath("$.isbn", is("123-4567891234")));
+    @PostMapping
+    public ResponseEntity<Book> createBook(@RequestBody Book book) {
+        Book savedBook = bookService.saveBook(book);
+        return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
     }
 
-    @Test
-public void testGetBook_invalidInput() throws Exception {
-    mockMvc.perform(get("/api/books")
-            .param("title", "")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
+        if (bookService.deleteBook(id)) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }
 
-    @Test
-public void testGetBook_returnsBookInXml() throws Exception {
-    mockMvc.perform(get("/api/books")
-            .param("title", "Test Book")
-            .accept(MediaType.APPLICATION_XML))
-            .andExpect(status().isOk())
-            .andExpect(xpath("/book/title").string("Test Book"))
-            .andExpect(xpath("/book/author").string("John Doe"))
-            .andExpect(xpath("/book/isbn").string("123-4567891234"));
-}
-
-}
