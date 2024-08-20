@@ -5,15 +5,15 @@ public class BookDTO {
     @JsonProperty("book_id")
     private Long id;
 
+    @JsonProperty("book_price")
+    @JsonDeserialize(using = CustomPriceDeserializer.class)
+    private Double price;
+
     @JsonProperty("book_title")
     private String title;
 
     @JsonProperty("book_author")
     private String author;
-
-    @JsonProperty("book_price")
-    @JsonDeserialize(using = CustomPriceDeserializer.class)
-    private Double price;
 
     // Getters and Setters
     public Long getId() {
